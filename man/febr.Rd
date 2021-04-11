@@ -7,8 +7,8 @@
 febr(dataset, merge = FALSE, progress = TRUE, verbose = TRUE, ...)
 }
 \arguments{
-\item{dataset}{Character vector indicating one or more datasets. Identification codes should be as recorded
-in \url{http://www.ufsm.br/febr/catalog/}. Use \code{dataset = "all"} to download all datasets.}
+\item{dataset}{Character vector indicating one or more datasets. Use \code{dataset = "all"} to download all
+datasets.}
 
 \item{merge}{(optional) Logical value indicating if the \emph{observation} ("observacao") and \emph{layer} ("camada")
 tables should be merged. Defaults to \code{merge = FALSE}. See \code{\link[base]{merge}} for more details.}
@@ -25,14 +25,16 @@ if you find any issue.}
 A list of data frames with data on the chosen dataset.
 }
 \description{
-Download data from the \emph{dataset} ("dataset"), \emph{observation} ("observacao"), \emph{layer} ("camada"), and
-\emph{metadata} ("metadado") tables of a datasets contained in the Free Brazilian Repository for Open Soil Data
--- \emph{\strong{febr}}, \url{http://www.ufsm.br/febr}.
+Download data from the \emph{identification} ("identificacao"), \emph{observation} ("observacao"), \emph{layer} ("camada"),
+and \emph{metadata} ("metadado") tables of a dataset contained in the Free Brazilian Repository for Open Soil
+Data -- FEBR, \url{https://www.pedometria.org/febr/}.
+}
+\note{
+Check the new core data download function \code{readFEBR()}.
 }
 \examples{
 \donttest{ 
-res <- febr(dataset = "ctb0003", merge = TRUE, variable = "all")
-str(res)
+# res <- febr(dataset = "ctb0013")
 }
 }
 \seealso{

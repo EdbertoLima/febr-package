@@ -1,9 +1,9 @@
-#' Get *unit* table
+#' Get *units* table
 #' 
-#' Download data from the *unit* ("unidade") table of the Free Brazilian Repository for Open Soil Data --
-#' ___febr___, \url{http://www.ufsm.br/febr}. This includes measurement units and conversion factors. This 
-#' is used to standardize the data contained in a dataset when downloading it via \code{\link[febr]{layer}} or
-#' \code{\link[febr]{observation}}.
+#' Download data from the *units* ("unidades") table of the Free Brazilian Repository for Open Soil Data --
+#' FEBR, \url{https://www.pedometria.org/febr/}. This includes measurement units and conversion 
+#' factors. This is used to standardize the data contained in a dataset when downloading it via
+#' \code{\link[febr]{layer}} or \code{\link[febr]{observation}}.
 #' 
 #' @param source (optional) Character vector indicating one or more source measurement units.
 #' 
@@ -16,33 +16,35 @@
 #' *Manual de Métodos de Análise de Solo*. Brasília: Embrapa.
 #' 
 #' @author Alessandro Samuel-Rosa \email{alessandrosamuelrosa@@gmail.com}
-#' @seealso The *unit* table at \url{https://goo.gl/Vvvsf2}
+#' @seealso The *unit* table at 
+#' \url{https://docs.google.com/spreadsheets/d/1tU4Me3NJqk4NH2z0jvMryGObSSQLCvGqdLEL5bvOflo}
 #' @export
 #' @examples
 # \donttest{
-#' res <- unit(source = c("%", "dag/kg"), target = "g/kg")
-#' res
+# Sys.sleep(time = 10)
+#' #res <- unit(source = c("%", "dag/kg"), target = "g/kg")
+#' #res
 # }
 ###############################################################################################################
 unit <-
   function (source, target) {
-
+    
     # DESCARREGAMENTO
     ## Descarregar tabela com unidades de medida
-    # res <- .getTable(x = "1tU4Me3NJqk4NH2z0jvMryGObSSQLCvGqdLEL5bvOflo")
-    res <- .getUnits()
+    # res <- .getUnits()
+    res <- .readGoogleSheetCSV(sheet.name = 'unidades')
     
     # ARGUMENTOS
     ## source
     if (!missing(source) && any(!source %in% res$unidade_origem)) {
       source <- source[which(!source %in% res$unidade_origem)]
-      stop (glue::glue("unknown value '{source}' passed to argument 'source'"))
+      stop (paste0("unknown value '", source, "' passed to argument 'source'"))
     }
     
     ## target
     if (!missing(target) && any(!target %in% res$unidade_destino)) {
       target <- target[which(!target %in% res$unidade_destino)]
-      stop (glue::glue("unknown value '{target}' passed to argument 'target'"))
+      stop (paste0("unknown value '", target, "}' passed to argument 'target'"))
     }
     
     # PROCESSAMENTO

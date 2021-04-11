@@ -2,8 +2,9 @@
 #'
 #' Download header data (column names and measurement units) from the *layer* ("camada") or *observation* 
 #' ("observacao") table of one or more datasets contained in the Free Brazilian Repository for Open Soil Data 
-#' -- ___febr___, \url{http://www.ufsm.br/febr}. This is useful to check what are the variables contained in a
-#' dataset before downloading it via \code{\link[febr]{layer}} or \code{\link[febr]{observation}}.
+#' -- FEBR, \url{https://www.pedometria.org/febr/}. This is useful to check what are the variables
+#' contained in a dataset before downloading it via \code{\link[febr]{layer}} or 
+#' \code{\link[febr]{observation}}.
 #'
 #' @template data_template
 #' @template metadata_template
@@ -23,51 +24,45 @@
 #' @author Alessandro Samuel-Rosa \email{alessandrosamuelrosa@@gmail.com}
 #' @seealso \code{\link[febr]{layer}}, \code{\link[febr]{observation}}
 #' @export
-#' @examples
-# \donttest{
-#' res <- header(dataset = c("ctb0001", "ctb0003"), table = "camada", variable = "ferro", stack = TRUE)
-# res <- header(dataset = "ctb0013", table = "observacao")
-#' id <- grep("ferro_", colnames(res))
-#' col <- colnames(res)[id]
-#' col[order(col)]
-# }
 ###############################################################################################################
 header <-
   function (dataset, table, variable, stack = FALSE, progress = TRUE, verbose = TRUE) {
+    
+    .Deprecated(new = 'metadata', package = 'febr')
     
     # ARGUMENTOS
     ## dataset
     if (missing(dataset)) {
       stop ("argument 'dataset' is missing")
     } else if (!is.character(dataset)) {
-      stop (glue::glue("object of class '{class(dataset)}' passed to argument 'dataset'"))
+      stop (paste("object of class", class(dataset), "passed to argument 'dataset'"))
     }
     
     ## table
     if (missing(table)) {
       stop ("argument 'table' is missing")
     } else if (!table %in% c("observacao", "camada")) {
-      stop (glue::glue("unknown value '{table}' passed to argument 'table'"))
+      stop (paste("unknown value '", table, "' passed to argument 'table'", sep = ""))
     }
     
     ## variable
     if (!missing(variable) && !is.character(variable)) {
-      stop (glue::glue("object of class '{class(variable)}' passed to argument 'variable'"))
+      stop (paste("object of class '", class(variable), "' passed to argument 'variable'", sep = ''))
     }
     
     ## stack
     if (!is.logical(stack)) {
-      stop (glue::glue("object of class '{class(stack)}' passed to argument 'stack'"))
+      stop (paste("object of class '", class(stack), "' passed to argument 'stack'", sep = ""))
     }
     
     ## progress
     if (!is.logical(progress)) {
-      stop (glue::glue("object of class '{class(progress)}' passed to argument 'progress'"))
+      stop (paste("object of class", class(progress), "passed to argument 'progress'"))
     }
     
     ## verbose
     if (!is.logical(verbose)) {
-      stop (glue::glue("object of class '{class(verbose)}' passed to argument 'verbose'"))
+      stop (paste("object of class", class(verbose), "passed to argument 'verbose'"))
     }
     
     ## variable + stack
@@ -104,7 +99,7 @@ header <-
       
       # DESCARREGAMENTO
       ## Cabeçalho com unidades de medida
-      tmp <- .getHeader(x = sheets_keys[[table]][i])
+      tmp <- .getHeader(x = sheets_keys[[table]][i], ws = table) # identifica Sheet com seu nome
       
       # COLUNAS
       ## Definir as colunas a serem mantidas

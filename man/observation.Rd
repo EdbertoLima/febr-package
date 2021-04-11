@@ -2,17 +2,23 @@
 % Please edit documentation in R/observation.R
 \name{observation}
 \alias{observation}
-\title{Get \emph{observation} table}
+\title{Get soil observations}
 \usage{
-observation(dataset, variable, stack = FALSE, missing = list(coord =
-  "keep", time = "keep", data = "keep"), standardization = list(crs =
-  NULL, time.format = NULL, units = FALSE, round = FALSE),
-  harmonization = list(harmonize = FALSE, level = 2), progress = TRUE,
-  verbose = TRUE)
+observation(
+  dataset,
+  variable,
+  stack = FALSE,
+  missing = list(coord = "keep", time = "keep", data = "keep"),
+  standardization = list(crs = NULL, time.format = NULL, units = FALSE, round = FALSE),
+  harmonization = list(harmonize = FALSE, level = 2),
+  progress = TRUE,
+  verbose = TRUE,
+  febr.repo = "remote"
+)
 }
 \arguments{
-\item{dataset}{Character vector indicating one or more datasets. Identification codes should be as recorded
-in \url{http://www.ufsm.br/febr/catalog/}. Use \code{dataset = "all"} to download all datasets.}
+\item{dataset}{Character vector indicating one or more datasets. Use \code{dataset = "all"} to download all
+datasets.}
 
 \item{variable}{(optional) Character vector indicating one or more variables. Accepts only general
 identification codes, e.g. \code{"ferro"} and \code{"carbono"}. If missing, then a set of standard identification
@@ -24,7 +30,7 @@ single table for output. Requires \code{standardization = list(units = TRUE)} --
 \code{stack = FALSE}, the output being a list of tables.}
 
 \item{missing}{(optional) List with named sub-arguments indicating what should be done with an observation
-missing spatial coordinates, \code{coord}, date of observation, \code{time}, or data on variables, \code{data}? Options are
+missing spatial coordinates, \code{coord}, date of observation, \code{time}, or data on variables, \code{data}. Options are
 \code{"keep"} (default) and \code{"drop"}.}
 
 \item{standardization}{(optional) List with named sub-arguments indicating how to perform data
@@ -32,13 +38,13 @@ standardization.
 \itemize{
 \item \code{crs} Character string indicating the EPSG code of the coordinate reference system (CRS) to which
 spatial coordinates should be transformed. For example, \code{crs = "EPSG:4674"}, i.e. SIRGAS 2000, the
-standard CRS for Brazil -- see more at \url{http://spatialreference.org/ref/epsg/}. Defaults to
+standard CRS for Brazil -- see more at \url{https://spatialreference.org/ref/epsg/}. Defaults to
 \code{crs = NULL}, i.e. no transformation is performed.
 \item \code{time.format} Character string indicating how to format dates. For example,
 \code{time.format = "\%d-\%m-\%Y"}, i.e. dd-mm-yyyy such as in 31-12-2001. Defaults to
 \code{time.format = NULL}, i.e. no formatting is performed. See \code{\link[base]{as.Date}} for more
 details.
-\item \code{units} Logical value indicating if the measurement units of the continuous variable(s) should
+\item \code{units} Logical value indicating if the measurement unit(s) of the continuous variable(s) should
 be converted to the standard measurement unit(s). Defaults to \code{units = FALSE}, i.e. no conversion is
 performed. See \code{\link[febr]{standard}} for more information.
 \item \code{round} Logical value indicating if the values of the continuous variable(s) should be rounded
@@ -49,7 +55,7 @@ no rounding is performed. See \code{\link[febr]{standard}} for more information.
 \item{harmonization}{(optional) List with named sub-arguments indicating if and how to perform data
 harmonization.
 \itemize{
-\item \code{harmonize} Logical value indicating if data should be harmonized? Defaults to \code{harmonize = FALSE},
+\item \code{harmonize} Logical value indicating if data should be harmonized. Defaults to \code{harmonize = FALSE},
 i.e. no harmonization is performed.
 \item \code{level} Integer value indicating the number of levels of the identification code of the variable(s)
 that should be considered for harmonization. Defaults to \code{level = 2}. See \sQuote{Details} for more
@@ -61,43 +67,46 @@ information.
 \item{verbose}{(optional) Logical value indicating if informative messages should be displayed. Generally
 useful to identify datasets with inconsistent data. Please report to \email{febr-forum@googlegroups.com}
 if you find any issue.}
+
+\item{febr.repo}{(optional) Character vector indicating where the data should be read from. Defaults to
+\code{febr.repo = "remote"}, i.e. the remote file directory hosted by the Federal University of Technology—
+Paraná at \url{https://cloud.utfpr.edu.br/index.php/s/Df6dhfzYJ1DDeso}. Alternatively, a local directory
+path can be passed to \code{febr.repo} if the user has a local copy of the file directory.}
 }
 \value{
 A list of data frames or a data frame with data on the chosen variable(s) of the chosen dataset(s).
 }
 \description{
-Download data from the \emph{observation} ("observacao") table of one or more datasets contained in the Free
-Brazilian Repository for Open Soil Data -- \emph{\strong{febr}}, \url{http://www.ufsm.br/febr}. This includes spatial
-coordinates, observation date, and variables such as geology, land use and vegetation, local topography, and
-much more. Use \code{\link[febr]{header}} if you want to check what are the variables contained in the
-\emph{observation} table of a dataset before downloading it.
+Download data from soil observations of one or more datasets contained in the Free Brazilian Repository
+for Open Soil Data -- FEBR, \url{https://www.pedometria.org/febr/}. This includes 1D data such
+as latitude, longitude, date of observation, underlying geology, land use and vegetation, local topography,
+soil classification, and so on.
 }
 \details{
 \subsection{Standard identification variables}{
 Standard identification variables and their content are as follows:
 \itemize{
-\item \code{dataset_id}. Identification code of the dataset in \emph{\strong{febr}} to which an observation belongs.
-\item \code{observacao_id}. Identification code of an observation in \emph{\strong{febr}}.
+\item \code{dataset_id}. Identification code of the dataset in the FEBR to which an observation belongs.
+\item \code{observacao_id}. Identification code of an observation in a dataset.
 \item \code{sisb_id}. Identification code of an observation in the Brazilian Soil Information System
-maintained by the Brazilian Agricultural Research Corporation (EMBRAPA) at
-\url{https://www.bdsolos.cnptia.embrapa.br/consulta_publica.html}.
+maintained by the Brazilian Agricultural Research Corporation (EMBRAPA).
 \item \code{ibge_id}. Identification code of an observation in the database of the Brazilian Institute
-of Geography and Statistics (IBGE) at \url{http://www.downloads.ibge.gov.br/downloads_geociencias.htm#}.
+of Geography and Statistics (IBGE).
 \item \code{observacao_data}. Date (dd-mm-yyyy) in which an observation was made.
 \item \code{coord_sistema}. EPSG code of the coordinate reference system.
-\item \code{coord_x}. Longitude (°) or easting (m).
-\item \code{coord_y}. Latitude (°) or northing (m).
+\item \code{coord_x}. Longitude (deg) or easting (m).
+\item \code{coord_y}. Latitude (deg) or northing (m).
 \item \code{coord_precisao}. Precision with which x- and y-coordinates were determined (m).
 \item \code{coord_fonte}. Source of the x- and y-coordinates.
 \item \code{pais_id}. Country code (ISO 3166-1 alpha-2).
 \item \code{estado_id}. Code of the Brazilian federative unit where an observation was made.
-\item \code{municipio_id}. Name of the Brazilian county where as observation was made.
+\item \code{municipio_id}. Name of the Brazilian municipality where as observation was made.
 \item \code{amostra_tipo}. Type of sample taken.
 \item \code{amostra_quanti}. Number of samples taken.
 \item \code{amostra_area}. Sampling area.
 }
 Further details about the content of the standard identification variables can be found in
-\url{http://www.ufsm.br/febr/book/} (in Portuguese).
+\url{https://docs.google.com/document/d/1Bqo8HtitZv11TXzTviVq2bI5dE6_t_fJt0HE-l3IMqM} (in Portuguese).
 }
 
 \subsection{Harmonization}{
@@ -107,9 +116,8 @@ that they are (approximately) equivalent to the values that would have been obta
 method to the standard dry combustion method is data harmonization.
 
 A heuristic data harmonization procedure is implemented in the \strong{febr} package. It consists of grouping
-variables
-based on a chosen number of levels of their identification code. For example, consider a variable with an
-identification code composed of four levels, \code{aaa_bbb_ccc_ddd}, where \code{aaa} is the first level and
+variables based on a chosen number of levels of their identification code. For example, consider a variable
+with an identification code composed of four levels, \code{aaa_bbb_ccc_ddd}, where \code{aaa} is the first level and
 \code{ddd} is the fourth level. Now consider a related variable, \code{aaa_bbb_eee_fff}. If the harmonization
 is to consider all four coding levels (\code{level = 4}), then these two variables will remain coded as
 separate variables. But if \code{level = 2}, then both variables will be re-coded as \code{aaa_bbb}, thus becoming the
@@ -119,6 +127,12 @@ same variable.
 \examples{
 res <- observation(dataset = "ctb0013", variable = "taxon")
 str(res)
+\donttest{
+# Download various datasets and standardize CRS
+res1 <- observation(
+  dataset = paste("ctb000", 4:5, sep = ""), variable = "taxon",
+  standardization = list(crs = "EPSG:4674"))
+}
 }
 \seealso{
 \code{\link[febr]{layer}}, \code{\link[febr]{standard}}, \code{\link[febr]{unit}}

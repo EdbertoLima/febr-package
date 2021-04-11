@@ -1,16 +1,20 @@
-#' Get *observation* table
+#' Get soil observations
 #'
-#' Download data from the *observation* ("observacao") table of one or more datasets contained in the Free
-#' Brazilian Repository for Open Soil Data -- ___febr___, \url{http://www.ufsm.br/febr}. This includes spatial
-#' coordinates, observation date, and variables such as geology, land use and vegetation, local topography, and
-#' much more. Use \code{\link[febr]{header}} if you want to check what are the variables contained in the 
-#' *observation* table of a dataset before downloading it.
+#' Download data from soil observations of one or more datasets contained in the Free Brazilian Repository
+#' for Open Soil Data -- FEBR, \url{https://www.pedometria.org/febr/}. This includes 1D data such
+#' as latitude, longitude, date of observation, underlying geology, land use and vegetation, local topography,
+#' soil classification, and so on.
 #' 
 #' @template data_template
 #' @template metadata_template
 #' 
+#' @param febr.repo (optional) Character vector indicating where the data should be read from. Defaults to
+#' `febr.repo = "remote"`, i.e. the remote file directory hosted by the Federal University of Technology—
+#' Paraná at \url{https://cloud.utfpr.edu.br/index.php/s/Df6dhfzYJ1DDeso}. Alternatively, a local directory
+#' path can be passed to `febr.repo` if the user has a local copy of the file directory.
+#' 
 #' @param missing (optional) List with named sub-arguments indicating what should be done with an observation
-#' missing spatial coordinates, `coord`, date of observation, `time`, or data on variables, `data`? Options are
+#' missing spatial coordinates, `coord`, date of observation, `time`, or data on variables, `data`. Options are
 #' `"keep"` (default) and `"drop"`.
 #'
 #' @param standardization (optional) List with named sub-arguments indicating how to perform data 
@@ -18,13 +22,13 @@
 #' \itemize{
 #' \item `crs` Character string indicating the EPSG code of the coordinate reference system (CRS) to which
 #'       spatial coordinates should be transformed. For example, `crs = "EPSG:4674"`, i.e. SIRGAS 2000, the
-#'       standard CRS for Brazil -- see more at \url{http://spatialreference.org/ref/epsg/}. Defaults to 
+#'       standard CRS for Brazil -- see more at \url{https://spatialreference.org/ref/epsg/}. Defaults to 
 #'       `crs = NULL`, i.e. no transformation is performed.
 #' \item `time.format` Character string indicating how to format dates. For example, 
 #'       \code{time.format = "\%d-\%m-\%Y"}, i.e. dd-mm-yyyy such as in 31-12-2001. Defaults to 
 #'       `time.format = NULL`, i.e. no formatting is performed. See \code{\link[base]{as.Date}} for more 
 #'       details.
-#' \item `units` Logical value indicating if the measurement units of the continuous variable(s) should
+#' \item `units` Logical value indicating if the measurement unit(s) of the continuous variable(s) should
 #'       be converted to the standard measurement unit(s). Defaults to `units = FALSE`, i.e. no conversion is
 #'       performed. See \code{\link[febr]{standard}} for more information.
 #' \item `round` Logical value indicating if the values of the continuous variable(s) should be rounded  
@@ -35,7 +39,7 @@
 #' @param harmonization (optional) List with named sub-arguments indicating if and how to perform data 
 #' harmonization.
 #' \itemize{
-#' \item `harmonize` Logical value indicating if data should be harmonized? Defaults to `harmonize = FALSE`,
+#' \item `harmonize` Logical value indicating if data should be harmonized. Defaults to `harmonize = FALSE`,
 #'       i.e. no harmonization is performed.
 #' \item `level` Integer value indicating the number of levels of the identification code of the variable(s) 
 #'       that should be considered for harmonization. Defaults to `level = 2`. See \sQuote{Details} for more
@@ -46,28 +50,27 @@
 #' \subsection{Standard identification variables}{
 #' Standard identification variables and their content are as follows:
 #' \itemize{
-#' \item `dataset_id`. Identification code of the dataset in ___febr___ to which an observation belongs.
-#' \item `observacao_id`. Identification code of an observation in ___febr___.
+#' \item `dataset_id`. Identification code of the dataset in the FEBR to which an observation belongs.
+#' \item `observacao_id`. Identification code of an observation in a dataset.
 #' \item `sisb_id`. Identification code of an observation in the Brazilian Soil Information System
-#' maintained by the Brazilian Agricultural Research Corporation (EMBRAPA) at
-#' \url{https://www.bdsolos.cnptia.embrapa.br/consulta_publica.html}.
+#' maintained by the Brazilian Agricultural Research Corporation (EMBRAPA).
 #' \item `ibge_id`. Identification code of an observation in the database of the Brazilian Institute
-#' of Geography and Statistics (IBGE) at \url{http://www.downloads.ibge.gov.br/downloads_geociencias.htm#}.
+#' of Geography and Statistics (IBGE).
 #' \item `observacao_data`. Date (dd-mm-yyyy) in which an observation was made.
 #' \item `coord_sistema`. EPSG code of the coordinate reference system.
-#' \item `coord_x`. Longitude (°) or easting (m).
-#' \item `coord_y`. Latitude (°) or northing (m).
+#' \item `coord_x`. Longitude (deg) or easting (m).
+#' \item `coord_y`. Latitude (deg) or northing (m).
 #' \item `coord_precisao`. Precision with which x- and y-coordinates were determined (m).
 #' \item `coord_fonte`. Source of the x- and y-coordinates.
 #' \item `pais_id`. Country code (ISO 3166-1 alpha-2).
 #' \item `estado_id`. Code of the Brazilian federative unit where an observation was made.
-#' \item `municipio_id`. Name of the Brazilian county where as observation was made.
+#' \item `municipio_id`. Name of the Brazilian municipality where as observation was made.
 #' \item `amostra_tipo`. Type of sample taken.
 #' \item `amostra_quanti`. Number of samples taken.
 #' \item `amostra_area`. Sampling area.
 #' }
 #' Further details about the content of the standard identification variables can be found in 
-#' \url{http://www.ufsm.br/febr/book/} (in Portuguese).
+#' \url{https://docs.google.com/document/d/1Bqo8HtitZv11TXzTviVq2bI5dE6_t_fJt0HE-l3IMqM} (in Portuguese).
 #' }
 #' 
 #' \subsection{Harmonization}{
@@ -77,9 +80,8 @@
 #' method to the standard dry combustion method is data harmonization.
 #' 
 #' A heuristic data harmonization procedure is implemented in the **febr** package. It consists of grouping
-#' variables 
-#' based on a chosen number of levels of their identification code. For example, consider a variable with an 
-#' identification code composed of four levels, `aaa_bbb_ccc_ddd`, where `aaa` is the first level and
+#' variables based on a chosen number of levels of their identification code. For example, consider a variable
+#' with an identification code composed of four levels, `aaa_bbb_ccc_ddd`, where `aaa` is the first level and
 #' `ddd` is the fourth level. Now consider a related variable, `aaa_bbb_eee_fff`. If the harmonization
 #' is to consider all four coding levels (`level = 4`), then these two variables will remain coded as
 #' separate variables. But if `level = 2`, then both variables will be re-coded as `aaa_bbb`, thus becoming the
@@ -91,150 +93,138 @@
 #' @author Alessandro Samuel-Rosa \email{alessandrosamuelrosa@@gmail.com}
 #' @seealso \code{\link[febr]{layer}}, \code{\link[febr]{standard}}, \code{\link[febr]{unit}}
 #' @export
+#' 
 #' @examples
-# \donttest{
-# res <- observation(dataset = paste("ctb000", 4:9, sep = ""), variable = "taxon")
 #' res <- observation(dataset = "ctb0013", variable = "taxon")
 #' str(res)
-# }
+#' \donttest{
+#' # Download various datasets and standardize CRS
+#' res1 <- observation(
+#'   dataset = paste("ctb000", 4:5, sep = ""), variable = "taxon",
+#'   standardization = list(crs = "EPSG:4674"))
+#' }
 ###############################################################################################################
 observation <-
-  function (dataset, variable, 
-            stack = FALSE, missing = list(coord = "keep", time = "keep", data = "keep"),
-            standardization = list(
-              crs = NULL, time.format = NULL,
-              units = FALSE, round = FALSE),
+  function (dataset, variable, stack = FALSE,
+            missing = list(coord = "keep", time = "keep", data = "keep"),
+            standardization = list(crs = NULL, time.format = NULL, units = FALSE, round = FALSE),
             harmonization = list(harmonize = FALSE, level = 2),
-            progress = TRUE, verbose = TRUE) {
-    
+            progress = TRUE, verbose = TRUE, febr.repo = 'remote') {
     # OPÇÕES E PADRÕES
     opts <- .opt()
     std_cols <- opts$observation$std.cols
-    
     # ARGUMENTOS
     ## dataset
     if (missing(dataset)) {
-      stop ("argument 'dataset' is missing")
+      stop("argument 'dataset' is missing")
     } else if (!is.character(dataset)) {
-      stop (glue::glue("object of class '{class(dataset)}' passed to argument 'dataset'"))
+      stop(paste("object of class '", class(dataset), "' passed to argument 'dataset'", sep = ''))
     }
-    
     ## variable
     if (!missing(variable) && !is.character(variable)) {
-      stop (glue::glue("object of class '{class(variable)}' passed to argument 'variable'"))
+      stop(paste("object of class '", class(variable), "' passed to argument 'variable'", sep = ''))
     }
-    
     ## stack
     if (!is.logical(stack)) {
-      stop (glue::glue("object of class '{class(stack)}' passed to argument 'stack'"))
+      stop(paste("object of class '", class(stack), "' passed to argument 'stack'", sep = ""))
     }
-    
     ## missing
     if (!missing(missing)) {
       if (is.null(missing$coord)) {
         missing$coord <- "keep"
       } else if (!missing$coord %in% c("drop", "keep")) {
-        stop (glue::glue("unknown value '{missing$coord}' passed to sub-argument 'missing$coord'"))
+        stop(paste("unknown value '", missing$coord, "' passed to sub-argument 'missing$coord'", sep = ""))
       }
       if (is.null(missing$time)) {
         missing$time <- "keep"
       } else if (!missing$time %in% c("drop", "keep")) {
-        stop (glue::glue("unknown value '{missing$time}' passed to sub-argument 'missing$time'"))
+        stop(paste("unknown value '", missing$time,  "' passed to sub-argument 'missing$time'", sep = ""))
       }
       if (is.null(missing$data)) {
         missing$data <- "keep"
       } else if (!missing$data %in% c("drop", "keep")) {
-        stop (glue::glue("unknown value '{missing$data}' passed to sub-argument 'missing$data'"))
+        stop(paste("unknown value '", missing$data,  "' passed to sub-argument 'missing$data'", sep = ""))
       }
     }
-    
     ## standardization
     if (!missing(standardization)) {
       if (is.null(standardization$crs)) {
         standardization$crs <- NULL
       } else if (!is.character(standardization$crs)) {
         y <- class(standardization$crs)
-        stop (glue::glue("object of class '{y}' passed to sub-argument 'standardization$crs'"))
+        stop(paste("object of class '", y, "' passed to sub-argument 'standardization$crs'", sep = ""))
       } else if (!toupper(standardization$crs) %in% opts$crs) {
         y <- standardization$crs
-        stop (glue::glue("unknown value '{y}' passed to sub-argument 'standardization$crs'"))
+        stop(paste("unknown value '", y, "' passed to sub-argument 'standardization$crs'", sep = ""))
       }
-      
       if (is.null(standardization$time.format)) {
         standardization$time.format <- NULL
       } else if (!is.character(standardization$time.format)) {
         y <- class(standardization$time.format)
-        stop (glue::glue("object of class '{y}' passed to sub-argument 'standardization$time.format'"))
+        stop(
+          paste("object of class '", y, "' passed to sub-argument 'standardization$time.format'", sep = ""))
       }
-      
       if (is.null(standardization$units)) {
         standardization$units <- FALSE
       } else if (!is.logical(standardization$units)) {
         y <- class(standardization$units)
-        stop (glue::glue("object of class '{y}' passed to sub-argument 'standardization$units'"))
+        stop(paste("object of class '", y, "' passed to sub-argument 'standardization$units'", sep = ""))
       }
       if (is.null(standardization$round)) {
         standardization$round <- FALSE
       } else if (!is.logical(standardization$round)) {
         y <- class(standardization$round)
-        stop (glue::glue("object of class '{y}' passed to sub-argument 'standardization$round'"))
+        stop(paste("object of class '", y, "' passed to sub-argument 'standardization$round'", sep = ""))
       }
-      
       if (is.null(standardization$units)) {
         standardization$units <- FALSE
       } else if (!is.logical(standardization$units)) {
         y <- class(standardization$units)
-        stop (glue::glue("object of class '{y}' passed to sub-argument 'standardization$units'"))
+        stop(paste("object of class '", y, "' passed to sub-argument 'standardization$units'", sep = ""))
       }
       if (is.null(standardization$round)) {
         standardization$round <- FALSE
       } else if (!is.logical(standardization$round)) {
         y <- class(standardization$round)
-        stop (glue::glue("object of class '{y}' passed to sub-argument 'standardization$round'"))
+        stop(paste("object of class '", y, "' passed to sub-argument 'standardization$round'", sep = ""))
       }
     }
-    
     ## harmonization
     if (!missing(harmonization)) {
       if (is.null(harmonization$harmonize)) {
         harmonization$harmonize <- FALSE
       } else if (!is.logical(harmonization$harmonize)) {
         y <- class(harmonization$harmonize)
-        stop (glue::glue("object of class '{y}' passed to sub-argument 'harmonization$harmonize'"))
+        stop(paste("object of class '", y, "' passed to sub-argument 'harmonization$harmonize'", sep = ""))
       }
       if (is.null(harmonization$level)) {
         harmonization$level <- 2
       } else if (!pedometrics::isNumint(harmonization$level)) {
         y <- class(harmonization$level)
-        stop (glue::glue("object of class '{y}' passed to sub-argument 'harmonization$level'"))
+        stop(paste("object of class '", y, "' passed to sub-argument 'harmonization$level'", sep = ""))
       }
     }
-    
     ## progress
     if (!is.logical(progress)) {
-      stop (glue::glue("object of class '{class(progress)}' passed to argument 'progress'"))
+      stop(paste("object of class '", class(progress), "' passed to argument 'progress'", sep = ""))
     }
-    
     ## verbose
     if (!is.logical(verbose)) {
-      stop (glue::glue("object of class '{class(verbose)}' passed to argument 'verbose'"))
+      stop(paste("object of class '", class(verbose), "' passed to argument 'verbose'", sep = ""))
     }
-    
     ## variable + stack || variable + harmonization
-    if (!missing(variable) && variable == "all") {
+    if (!missing(variable) && all(variable == "all")) {
       if (stack) {
-        stop ("data cannot be stacked when downloading all variables")
+        stop("data cannot be stacked when downloading all variables")
       }
       if (harmonization$harmonize) {
-        stop ("data cannot be harmonized when downloading all variables")
+        stop("data cannot be harmonized when downloading all variables")
       }
     }
-    
     ## dataset + stack
     if (stack && length(dataset) == 1 && dataset != "all") {
-      stop ("data cannot be stacked when downloading a single dataset")
+      stop("data cannot be stacked when downloading a single dataset")
     }
-    
     # PADRÕES
     ## Descarregar tabela com unidades de medida e número de casas decimais quando padronização é solicitada
     ## ou quando empilhamento é solicitado
@@ -242,19 +232,20 @@ observation <-
       # febr_stds <- .getTable(x = "1Dalqi5JbW4fg9oNkXw5TykZTA39pR5GezapVeV0lJZI")
       # febr_unit <- .getTable(x = "1tU4Me3NJqk4NH2z0jvMryGObSSQLCvGqdLEL5bvOflo")
       febr_stds <- .getStds()
-      febr_unit <- .getUnits()
+      # febr_unit <- .getUnits()
+      febr_unit <- .readGoogleSheetCSV(sheet.name = 'unidades')
     }
     
     ## stack + stadardization
     ## Padronização não precisa ser feita no caso de descarregamento apenas das variáveis padrão
     ## Também não precisa ser feita no caso de variáveis de tipo 'texto'
     if (stack && !standardization$units && !missing(variable) && variable != "all") {
-      tmp_var <- glue::glue("^{variable}")
+      tmp_var <- paste("^", variable, sep = "")
       idx <- lapply(tmp_var, function (pattern) grep(pattern = pattern, x = febr_stds$campo_id))
       idx <- unlist(idx)
       is_all_text <- all(febr_stds$campo_tipo[idx] == "texto")
       if (!is_all_text) {
-        stop ("data cannot be stacked when measurement units are not standardized")
+        stop("data cannot be stacked when measurement units are not standardized")
       }
     }
     
@@ -269,26 +260,38 @@ observation <-
     }
     res <- list()
     for (i in 1:length(sheets_keys$observacao)) {
-      # i <- 1
+      
       # Informative messages
       dts <- sheets_keys$ctb[i]
       if (verbose) {
         par <- ifelse(progress, "\n", "")
-        message(paste(par, "Downloading dataset ", dts, "...", sep = ""))
+        message(paste(par, "Downloading ", dts, "-observacao...", sep = ""))
       }
       
       # DESCARREGAMENTO
-      ## Cabeçalho com unidades de medida
-      unit <- .getHeader(x = sheets_keys$observacao[i])
-      
-      ## Dados
-      tmp <- .getTable(x = sheets_keys$observacao[i])
+      # unit <- .readGoogleSheetCSV(sheet.id = sheets_keys[i, "observacao"], sheet.name = 'observacao')
+      # tmp <- unit[['table']]
+      # unit <- unit[['header']]
+      tmp <- .readOwnCloud(ctb = sheets_keys[i, "ctb"], table = 'observacao', febr.repo = febr.repo)
+      unit <- .readOwnCloud(ctb = sheets_keys[i, "ctb"], table = 'metadado', febr.repo = febr.repo)
+      unit$campo_unidade[is.na(unit$campo_unidade)] <- '-'
+      unit <- unit[unit$tabela_id == 'observacao', c('campo_id', 'campo_nome', 'campo_unidade')]
+      rownames(unit) <- unit$campo_id
+      unit <- unit[, -1]
+      unit <- as.data.frame(t(unit), stringsAsFactors = FALSE)
       n_rows <- nrow(tmp)
+      
+      # ## Cabeçalho com unidades de medida
+      # unit <- .getHeader(x = sheets_keys$observacao[i], ws = 'observacao') # identifica Sheet com seu nome
+      # 
+      # ## Dados
+      # tmp <- .getTable(x = sheets_keys$observacao[i], ws = 'observacao')
+      # n_rows <- nrow(tmp)
       
       # PROCESSAMENTO I
       ## A decisão pelo processamento dos dados começa pela verificação de dados faltantes nas coordenadas e
       ## na data.
-      na_coord <- max(apply(tmp[c("coord_x", "coord_y")], 2, function (x) sum(is.na(x))))
+      na_coord <- max(apply(tmp[, c("coord_x", "coord_y")], 2, function (x) sum(is.na(x))))
       na_time <- is.na(tmp$observacao_data)
       n_na_time <- sum(na_time)
       # if (missing$coord == "keep" || missing$coord == "drop" && na_coord < n_rows) {
@@ -339,7 +342,8 @@ observation <-
           
           # LINHAS II
           ## Definir as linhas a serem mantidas
-          if (missing$data == "drop") {
+          ## É preciso considerar todas as possibilidades de remoção de dados
+          if (missing$data == "drop" || missing$coord == 'drop' || missing$time == 'drop') {
             tmp <- tmp_clean
           }
           
@@ -362,7 +366,7 @@ observation <-
           # PADRONIZAÇÃO I
           ## Sistema de referência de coordenadas
           ## Primeiro verificar se existem observações com coordenadas e se o SRC deve ser transformado
-          na_coord <- max(apply(tmp[c("coord_x", "coord_y")], 2, function (x) sum(is.na(x))))
+          na_coord <- max(apply(tmp[, c("coord_x", "coord_y")], 2, function (x) sum(is.na(x))))
           if (n_rows > na_coord && !is.null(standardization$crs)) {
             tmp <- .crsTransform(obj = tmp, crs = standardization$crs)
           }
@@ -380,6 +384,7 @@ observation <-
             
             ## Identificar variáveis contínuas (classe 'numeric' e 'integer'), excluíndo variáveis de 
             ## identificação padrão
+            ## TODO: EXCETO 'coord_precisao'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             id_class <- sapply(tmp, class)
             cont_idx <- which(id_class %in% c("numeric", "integer") & !names(id_class) %in% std_cols)
             if (length(cont_idx) >= 1) {
@@ -446,7 +451,7 @@ observation <-
           
           # IDENTIFICAÇÃO
           ## Código de identificação do conjunto de dados
-          res[[i]] <- cbind(dataset_id = as.character(sheets_keys$ctb[i]), tmp, stringsAsFactors = FALSE)
+          res[[i]] <- cbind(dataset_id = sheets_keys$ctb[i], tmp, stringsAsFactors = FALSE)
           
           # ATTRIBUTOS II
           a <- attributes(res[[i]])
@@ -464,15 +469,15 @@ observation <-
           
         } else {
           res[[i]] <- data.frame()
-          m <- glue::glue("All observations in {dts} are missing data. None will be returned.")
+          m <- paste("All observations in {dts} are missing data. None will be returned.")
           message(m)
         }
       } else {
         res[[i]] <- data.frame()
         if (na_coord == n_rows) {
-          m <- glue::glue("All observations in {dts} are missing coordinates. None will be returned.")  
+          m <- paste("All observations in", dts, "are missing coordinates. None will be returned.") 
         } else if (n_na_time == n_rows) {
-          m <- glue::glue("All observations in {dts} are missing date. None will be returned.")  
+          m <- paste("All observations in", dts, "are missing date. None will be returned.")  
         }
         message(m)
       }

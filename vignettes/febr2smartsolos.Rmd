@@ -1,0 +1,186 @@
+---
+title: "Mapeamento de Dados e Metadados de Perfis do Solo entre FEBR e SMARTSolos"
+date: "`r format(Sys.Date(), '%d-%m-%Y')`"
+output:
+  rmarkdown::html_vignette:
+    toc: yes
+bibliography: biblio.bib
+link-citations: yes
+csl: abnt.csl
+vignette: |
+  %\VignetteIndexEntry{Mapeamento de Dados e Metadados de Perfis do Solo entre FEBR e SMARTSolos}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+**Alessandro Samuel-Rosa**<br/>
+Doutor em Agronomia-Ciência do Solo, Universidade Federal Rural do Rio de Janeiro (UFRRJ), Seropédica, Rio de Janeiro, Brasil.<br/>
+Professor do Magistério Superior, Universidade Tecnológica Federal do Paraná (UFFPR), Santa Helena, Paraná, Brasil.<br/>
+http://lattes.cnpq.br/1609751519717461<br/>
+_E-mail_: alessandrorosa@utfpr.edu.br
+
+**Glauber José Vaz**<br/>
+Ultima graduação, nome da instituição por extenso (sigla entre parênteses), cidade, estado, Brasil.
+Cargo, nome da instituição por extenso (sigla entre parênteses), Campinas, São Paulo, Brasil.<br/>
+URL (Lattes, ou página pessoal)<br/>
+_E-mail_:<br/>
+
+Submetido em: dd/mm/yyyy. Aprovado em: dd/mm/yyyy. Publicado em: dd/mm/yyyy.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+<!-- http://revista.ibict.br/ciinf/ -->
+
+## RESUMO
+
+**Palavras-chave:**
+
+## ABSTRACT
+
+_Abstract_
+
+**Key words:**
+
+## RESUMEN
+
+_Resumen_
+
+**Palabras clave:**
+
+## INTRODUÇÃO
+
+Repositórios de dados da pesquisa. Interoperabilidade. Aliança Global pelo Solo. PronaSolos.
+
+Parágrafo sobre o FEBR.
+
+Parágrafo sobre o SMARTSolos.
+
+O objetivo deste artigo é relatar nossa experiência na implementação de uma rotina de mapeamento de dados e metadados de perfis do solo entre o FEBR e o SMARTSolos.
+
+## MODELO DE DADOS E ESQUEMA DE METADADOS
+
+### SMARTSolos
+
+```json
+{
+  "items": [
+    {
+      "ID_PONTO": "Perfil 14",
+      "ORDEM": "ARGISSOLO",
+      "SUBORDEM": "VERMELHO",
+      "HORIZONTES": [
+        {
+          "SIMB_HORIZ": "Ap1",
+          "LIMITE_SUP": 0,
+          "LIMITE_INF": 12
+        },
+        {
+          "SIMB_HORIZ": "Ap2",
+          "LIMITE_SUP": 12,
+          "LIMITE_INF": 40
+        },
+        {
+          "SIMB_HORIZ": "2Bt1",
+          "LIMITE_SUP": 40,
+          "LIMITE_INF": 130
+        },
+        {
+          "SIMB_HORIZ": "2Bt2",
+          "LIMITE_SUP": 130,
+          "LIMITE_INF": 200
+        }
+      ]
+    }
+  ]
+}
+```
+
+### FEBR
+
+observacao_id | taxon_sibcs
+------------- | ------------------
+Perfil 14     | ARGISSOLO VERMELHO
+
+Table: Tabela `observacao` utilizada no FEBR.
+
+observacao_id | camada_id | profund_sup | profund_inf
+------------- | --------- | ----------- | -----------
+Perfil 14     | Ap1      | 0            | 12
+Perfil 14     | Ap2      | 12           | 40
+Perfil 14     | 2Bt1     | 40           | 130
+Perfil 14     | 2Bt2     | 130          | 200
+
+Table: Tabela `camada` utilizada no FEBR.
+
+## TABELA DE MAPEAMENTO
+
+<!-- https://docs.google.com/spreadsheets/d/1mc5S-HsoCcxLeue97eMoWLMse4RzFZ1_MCQyQhfzXUg -->
+
+O primeiro passo do trabalho consistiu na construção de uma tabela de mapeamento entre FEBR e SMARTSolos. Nessa tabela foram incluídos os nomes variáveis utilizadas no SMARTSolos para representar cada uma das propriedades do solo (`ss_var_name`). Para cada variável foram especificados a unidade de medida (`ss_var_unit`), o tipo de dado (`ss_var_type`), e a condição da variável no SMARTSolos (`ss_var_status`). Em seguida, as variáveis foram agrupadas em função do objeto/lista do qual fazem parte no arquivo JSON (`ss_item_name`). Ao todo foram especificadas 63 variáveis, das quais 57 fazem parte da lista `horizontes`.
+
+Para cada variável definida no SMARTSolos, foram identificadas todas as variáveis correspondentes no FEBR (`febr_var_name`). A identificação de uma ou mais variáveis correspondentes foi necessária devidos às diferenças estruturais entre os dois esquemas. Diferente do FEBR, o SMARTSolos assume que os dados das propriedades do solo foram produzidos utilizando os métodos laboratoriais recomendados para fins de classificação taxonômica de perfis de solo [@TeixeiraEtAl2017; @SantosEtAl2018]. Assim, as propriedades do solo são designadas apenas por seu nome teórico, não sendo acompanhadas por metadados de métodos. Por exemplo, o conteúdo total da fração de tamanho silte (0,002–0,05 mm) na fração terra fina seca ao ar (⌀ < 2 mm, TFSA) é designado por `SILTE`.
+
+No FEBR, as propriedades do solo possuem designações operacionais. Por exemplo, o conteúdo total da fração silte na TFSA pode ser designado utilizando, pelo menos, seis códigos identificadores distintos: `silte_sbcs_naoh_calc`, `silte_usda_naoh_calc`, `silte_sbcs_naoh_pipeta`, `silte_usda_naoh_pipeta`, `silte_sbcs_naoh_xxx` e `silte_usda_naoh_xxx`. Cada um desses códigos identifica variações no método de determinação do conteúdo de silte. Contudo, os dados identificados por todos os seis códigos atendem à definição teórica de `SILTE` utilizada no SMARTSolos pois são previstas no Sistema Brasileiro de Classificação de Solos [@IBGE2015a].
+
+A Tabela 1 apresenta parte da tabela de mapeamento de metadados entre FEBR e SMARTSolos. Nela estão incluídas todas as propriedades do solo cujo mapeamento pode ser realizado por meio da conversão direta de nomenclatura e unidade de medida entre os dois esquemas. A grande maioria delas são propriedades do solo cujos dados são obtidos via análises laboratoriais como a distribuição do tamanho de partículas e o conteúdo dos cátions básicos trocáveis. Completam a lista as chaves de identificação de perfis (`ID_PONTO` = `observacao_id`) e horizontes (`SIMB_HORIZ` = `camada_nome`) e os limites superior e inferior de amostragem destes.
+
+```{r}
+chave <- "1mc5S-HsoCcxLeue97eMoWLMse4RzFZ1_MCQyQhfzXUg"
+https_request <- paste0(
+  "https://docs.google.com/spreadsheets/d/", chave, "/gviz/tq?tqx=out:csv&sheet=dados")
+tabela <- suppressWarnings(
+  utils::read.table(file = https_request, sep = ",", header = TRUE, stringsAsFactors = FALSE))
+idx <- tabela[["febr_process"]] == "map"
+knitr::kable(tabela[idx, c("sse_item_name", "sse_var_name", "febr_table_name", "febr_var_name")],
+  caption = "__Tabela 1.__ Tabela de mapeamento de metadados entre FEBR e SMARTSolos via conversão de nomenclatura e unidade de medida.",
+  row.names = FALSE)
+```
+
+A rotina de mapeamento de dados e metadados entre FEBR e SMARTSolos foi implementada na linguagem R utilizando a infraestrutura do pacote __febr__ [@SamuelRosa2020]. O pacote __febr__ foi originalmente criado para facilitar o acesso aos dados publicados no FEBR diretamente do ambiente R. Ele inclui rotinas de padronização que viabilizam o reúso imediato dos dados. Novas funcionalidades são adicionadas ao pacote periodicamente, aumentando seu espectro de aplicação. Esse é o caso da rotina de mapeamento de dados e metadados que apresentamos neste artigo, implementada na forma das funções `febr2smartsolos` e `smartsolos2febr`.
+
+## MAPEAMENTO DE DADOS VIA RECODIFICAÇÃO
+
+```{r, results='asis'}
+idx <- tabela[["febr_process"]] == "recode"
+knitr::kable(tabela[idx, c("sse_item_name", "sse_var_name", "febr_table_name", "febr_var_name")],
+  caption =
+    "Tabela de mapeamento de dados entre FEBR e SMARTSolos com recodificação de variáveis.",
+    row.names = FALSE)
+```
+
+### CLASSIFICAÇÃO TAXONÔMICA
+
+O mapeamento dos dados taxonômicos exigiu a implementação de uma rotina específica de processamento de dados. Essa rotina decompõe o texto completo da classificação taxonômica de um perfil de solo em suas classes constituíntes. Implementada na forma da função `taxonomy()`, a decomposição da classificação taxonômica recupera dados do primeiro ao quarto nível categórico do SiBCS (ordem, subordem, grande grupo e subgrupo), conforme mostra o exemplo abaixo:
+
+```{r, echo = TRUE}
+texto <- c(
+  "PLANOSSOLO HÁPLICO Distrófico solódico êndico plintossólico, textura média",
+  "CAMBISSOLO HÁPLICO Ta Eutrófico léptico A proeminente textura média",
+  "CHERNOSSOLO ARGILÚVICO Órtico típico textura média com cascalho/argilosa",
+  "ARGISSOLO VERMELHO-AMARELO",
+  "Latossolo"
+)
+febr::taxonomy(
+  texto,
+  method = "decompose",
+  sep = " ",
+  pattern = c(", ", " A ", " textura ")
+)
+```
+
+A principal dificuldade encontrada na decomposição da classificação taxonômica foi a ausência de um padrão de expressão textual da classificação do solo. O primeiro caso mostrado acima exemplifica o cenário ideal, em que os quatro primeiros níveis categóricos (PLANOSSOLO HÁPLICO Distrófico solódico êndico plintossólico) são separados dos dados subsequentes por um vírgula [@OliveiraEtAl2018b]. Este formato é aquele recomendado no SiBCS [@SantosEtAl2018]. Entretanto, é comum encontrar formas não padronizadas como aqueles do segundo e terceiro casos mostrados acima [@FloresEtAl2012]. Nesses casos, é preciso identificar quais são os termos que aparecem imediatamente após o quarto nível categórico, descartando o mesmo e os subsequentes. No exemplo acima, esses termos são "A" e "textura", respectivamente, que são informados ao argumento `pattern`.
+
+A identificação do conjunto de termos que separam os quatro primeiros níveis categóricos dos dados subsequentes não é trivial. Isso acontece porque o terceiro e quarto níveis categóricos podem ser constituídos por duas ou mais palavras. Assim, não é possível utilizar a contagem de palavras como critério de identificação. Por exemplo, no primeiro caso acima, o quarto nível categórico é constituído por três palavras (solódico êndico plintossólico). Já no segundo caso, o terceiro nível categórico é constituído por duas palavras (Ta Eutrófico). O resultado da falta de padronização é a necessidade de realizar o processamento dos dados taxonômicos múltiplas vezes, até que sejam identificados todos os temos que demarcam o final dos quatro primeiros níveis categóricos no texto.
+
+### COR DO SOLO
+
+A cor do solo foi outra propriedade que exigiu a implementação de rotina específica de mapeamento. Essa propriedade morfológica do solo é registrada utilizando a notação de cores de Munsell® (matiz valor/croma). O matiz indica o espectro dominante da cor, enquanto valor e croma quantificam a luminosidade e saturação da cor, respectivamente [@MunsellColor2015]. No FEBR, a cor do solo é armazenada em uma única coluna utilizando a notação completa de Munsell®, por exemplo, "5YR 5/6" (vermelho-amarelado). Entretanto, no SMARTSolos, cada uma dos componentes da notação de Munsell® são armazenados em campos distintos. Para fazer esse mapeamento, basta dividir a cadeia de caracteres que compõe a notação da cor usando o espaço (" ") e barra ("/") como caracteres delimitadores. Essa solução é eficiente porque os produtores de dados do solo respeitam o padrão internacional de registro da cor do solo usando a notação de Munsell® [@SantosEtAl2015].
+
+## CONSIDERAÇÕES FINAIS
+
+* Produtores de dados do solo devem respeitar os padrões de expressão dos dados estabelecidos nos manuais de coleta, descrição e classificação de solos:
+  * Classificação taxonômica: ORDEM SUBORDEM Grande Grupo subgrupo, dados adicionais
+
+## REFERÊNCIAS

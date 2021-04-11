@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 CRAN-RELEASE
+docs
+*.json
+app-env
